@@ -7,8 +7,10 @@ const usuariosRouter = require('./usuarios');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// Aumentar el límite de tamaño de carga a 10MB
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+
 app.use('/publicaciones', publicacionesRouter);
 app.use('/usuarios', usuariosRouter);
 
@@ -16,7 +18,6 @@ app.get('/', (req, res) => {
   res.send('Bienvenido a la API de la red social');
 });
 
-// Iniciar el servidor después de verificar la conexión a la base de datos
 pool.connect((err, client, release) => {
   if (err) {
     return console.error('Error al conectar a la base de datos:', err.stack);
