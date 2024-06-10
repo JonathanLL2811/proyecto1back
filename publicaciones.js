@@ -1,3 +1,4 @@
+// publicaciones.js
 const express = require('express');
 const multer = require('multer');
 const pool = require('./conexion');
@@ -30,9 +31,10 @@ router.post('/', upload.single('foto'), async (req, res) => {
     `;
     const values = [descripcion, nombre_usuario, foto, nombre_foto, mime_type];
     const result = await pool.query(query, values);
-    
+
     res.json(result.rows[0]);
   } catch (error) {
+    console.error('Error al crear publicación:', error);
     res.status(500).json({ error: error.message });
   }
 });
