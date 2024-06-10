@@ -1,7 +1,9 @@
+// index.js
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors'); // Agregar el módulo CORS
+const cors = require('cors');
 const pool = require('./conexion');
+const authRoutes = require('./authRoutes'); // Importa el enrutador de autenticación
 const publicacionesRouter = require('./publicaciones');
 const usuariosRouter = require('./usuarios');
 
@@ -15,6 +17,10 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
+// Usa el enrutador de autenticación en la ruta '/auth'
+app.use('/auth', authRoutes);
+
+// Usa los enrutadores de publicaciones y usuarios en sus respectivas rutas
 app.use('/publicaciones', publicacionesRouter);
 app.use('/usuarios', usuariosRouter);
 
@@ -33,3 +39,4 @@ pool.connect((err, client, release) => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
   });
 });
+

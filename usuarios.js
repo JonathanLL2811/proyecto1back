@@ -12,7 +12,8 @@ router.get('/', async (req, res) => {
     const result = await pool.query('SELECT * FROM tbl_usuario');
     res.json(result.rows);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error al obtener usuarios:', error);
+    res.status(500).json({ error: 'Error al obtener usuarios' });
   }
 });
 
@@ -31,7 +32,8 @@ router.post('/', upload.single('imagen'), async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error al crear usuario:', error);
+    res.status(500).json({ error: 'Error al crear usuario' });
   }
 });
 

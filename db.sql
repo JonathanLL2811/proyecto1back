@@ -24,3 +24,4 @@ CREATE TABLE tbl_publicaciones (
       FOREIGN KEY(nombre_usuario) 
       REFERENCES tbl_usuario(nombre_usuario)
 );
+select * from tbl_usuario
