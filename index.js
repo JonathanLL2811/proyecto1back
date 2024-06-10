@@ -1,11 +1,15 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors'); // Agregar el módulo CORS
 const pool = require('./conexion');
 const publicacionesRouter = require('./publicaciones');
 const usuariosRouter = require('./usuarios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Configurar CORS
+app.use(cors());
 
 // Aumentar el límite de tamaño de carga a 10MB
 app.use(bodyParser.json({ limit: '10mb' }));
