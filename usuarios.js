@@ -14,24 +14,25 @@ const verificarToken = (req, res, next) => {
   // Obtener el token del encabezado de la solicitud
   const token = req.headers['authorization'];
 
-  // Verificar si existe el token
-  if (!token) {
-    return res.status(401).json({ error: 'Acceso no autorizado. Token no proporcionado.' });
-  }
+  // Verificar si existe el token y si la solicitud no es para la creación de usuarios
+  if (token && !req.path.includes('/usuarios')) {
+    try {
+      // Verificar y decodificar el token
+      const decoded = jwt.verify(token.split(' ')[1], JWT_SECRET); // Eliminar 'Bearer ' del token
 
-  try {
-    // Verificar y decodificar el token
-    const decoded = jwt.verify(token.split(' ')[1], JWT_SECRET); // Eliminar 'Bearer ' del token
+      // Agregar el usuario decodificado a la solicitud
+      req.usuario = decoded.usuario;
 
-    // Agregar el usuario decodificado a la solicitud
-    req.usuario = decoded.usuario;
-
-    // Continuar con la siguiente middleware
+      // Continuar con la siguiente middleware
+      next();
+    } catch (error) {
+      // Manejar errores de token inválido
+      console.error('Error al verificar token:', error);
+      return res.status(401).json({ error: 'Acceso no autorizado. Token inválido.' });
+    }
+  } else {
+    // Si no se proporciona un token o la solicitud es para la creación de usuarios, continuar sin verificar el token
     next();
-  } catch (error) {
-    // Manejar errores de token inválido
-    console.error('Error al verificar token:', error);
-    return res.status(401).json({ error: 'Acceso no autorizado. Token inválido.' });
   }
 };
 
@@ -50,8 +51,8 @@ router.get('/', verificarToken, async (req, res) => {
   }
 });
 
-// Crear un nuevo usuario con imagen (requiere autenticación)
-router.post('/', verificarToken, upload.single('imagen'), async (req, res) => {
+// Crear un nuevo usuario con imagen (no requiere autenticación)
+router.post('/', upload.single('imagen'), async (req, res) => {
   try {
     const { nombre_usuario, nombre, apellido, correo, contrasena } = req.body;
     const imagenBuffer = req.file ? req.file.buffer : null;
