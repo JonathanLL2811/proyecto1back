@@ -1,11 +1,13 @@
 const express = require('express');
 const multer = require('multer');
 const pool = require('./conexion');
-const jwt = require('jsonwebtoken'); // Importar la biblioteca jsonwebtoken
+const jwt = require('jsonwebtoken'); // Importar jsonwebtoken
 const router = express.Router();
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+
+const JWT_SECRET = 'clave_secreta'; // Asegúrate de usar la misma clave secreta
 
 // Middleware para verificar el token JWT
 const verificarToken = (req, res, next) => {
@@ -19,7 +21,7 @@ const verificarToken = (req, res, next) => {
 
   try {
     // Verificar y decodificar el token
-    const decoded = jwt.verify(token, 'clave'); // Reemplaza 'tu_clave_secreta' con tu propia clave secreta
+    const decoded = jwt.verify(token.split(' ')[1], JWT_SECRET); // Eliminar 'Bearer ' del token
 
     // Agregar el usuario decodificado a la solicitud
     req.usuario = decoded.usuario;
