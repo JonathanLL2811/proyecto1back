@@ -1,13 +1,40 @@
 const express = require('express');
 const multer = require('multer');
 const pool = require('./conexion');
+const jwt = require('jsonwebtoken'); // Importar la biblioteca jsonwebtoken
 const router = express.Router();
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// Obtener todos los usuarios
-router.get('/', async (req, res) => {
+// Middleware para verificar el token JWT
+const verificarToken = (req, res, next) => {
+  // Obtener el token del encabezado de la solicitud
+  const token = req.headers['authorization'];
+
+  // Verificar si existe el token
+  if (!token) {
+    return res.status(401).json({ error: 'Acceso no autorizado. Token no proporcionado.' });
+  }
+
+  try {
+    // Verificar y decodificar el token
+    const decoded = jwt.verify(token, 'clave'); // Reemplaza 'tu_clave_secreta' con tu propia clave secreta
+
+    // Agregar el usuario decodificado a la solicitud
+    req.usuario = decoded.usuario;
+
+    // Continuar con la siguiente middleware
+    next();
+  } catch (error) {
+    // Manejar errores de token inválido
+    console.error('Error al verificar token:', error);
+    return res.status(401).json({ error: 'Acceso no autorizado. Token inválido.' });
+  }
+};
+
+// Obtener todos los usuarios (requiere autenticación)
+router.get('/', verificarToken, async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM tbl_usuario');
     const usuarios = result.rows.map(usuario => ({
@@ -21,8 +48,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Crear un nuevo usuario con imagen
-router.post('/', upload.single('imagen'), async (req, res) => {
+// Crear un nuevo usuario con imagen (requiere autenticación)
+router.post('/', verificarToken, upload.single('imagen'), async (req, res) => {
   try {
     const { nombre_usuario, nombre, apellido, correo, contrasena } = req.body;
     const imagenBuffer = req.file ? req.file.buffer : null;

@@ -1,3 +1,4 @@
+-- Active: 1717892304154@@127.0.0.1@5432@redsocial
 -- Crear la tabla tbl_usuario
 CREATE TABLE tbl_usuario (
     nombre_usuario VARCHAR(20) PRIMARY KEY,
