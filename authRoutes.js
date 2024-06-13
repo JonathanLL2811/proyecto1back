@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
-// Configurar la clave secreta JWT desde el archivo .env
+//clave secreta JWT desde el archivo .env
 const JWT_SECRET = process.env.JWT_SECRET || 'clave_secreta';
 
 // Ruta para iniciar sesión

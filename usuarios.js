@@ -1,20 +1,20 @@
 const express = require('express');
 const multer = require('multer');
 const pool = require('./conexion');
-const jwt = require('jsonwebtoken'); // Importar jsonwebtoken
+const jwt = require('jsonwebtoken');
 const router = express.Router();
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-const JWT_SECRET = 'clave_secreta'; // Asegúrate de usar la misma clave secreta
+const JWT_SECRET = 'clave_secreta'; 
 
 // Middleware para verificar el token JWT
 const verificarToken = (req, res, next) => {
   // Obtener el token del encabezado de la solicitud
   const token = req.headers['authorization'];
 
-  // Verificar si existe el token y si la solicitud no es para la creación de usuarios
+  // Verificar si existe el token y si la solicitud
   if (token && !req.path.includes('/usuarios')) {
     try {
       // Verificar y decodificar el token
@@ -23,7 +23,6 @@ const verificarToken = (req, res, next) => {
       // Agregar el usuario decodificado a la solicitud
       req.usuario = decoded.usuario;
 
-      // Continuar con la siguiente middleware
       next();
     } catch (error) {
       // Manejar errores de token inválido
@@ -31,7 +30,7 @@ const verificarToken = (req, res, next) => {
       return res.status(401).json({ error: 'Acceso no autorizado. Token inválido.' });
     }
   } else {
-    // Si no se proporciona un token o la solicitud es para la creación de usuarios, continuar sin verificar el token
+
     next();
   }
 };
@@ -42,7 +41,7 @@ router.get('/', verificarToken, async (req, res) => {
     const result = await pool.query('SELECT * FROM tbl_usuario');
     const usuarios = result.rows.map(usuario => ({
       ...usuario,
-      imagen: usuario.imagen ? usuario.imagen.toString('base64') : null // Convertir buffer a base64 si existe
+      imagen: usuario.imagen ? usuario.imagen.toString('base64') : null // Convertir buffer a base64
     }));
     res.json(usuarios);
   } catch (error) {
@@ -51,7 +50,7 @@ router.get('/', verificarToken, async (req, res) => {
   }
 });
 
-// Crear un nuevo usuario con imagen (no requiere autenticación)
+// Crear un nuevo usuario con imagen
 router.post('/', upload.single('imagen'), async (req, res) => {
   try {
     const { nombre_usuario, nombre, apellido, correo, contrasena } = req.body;
