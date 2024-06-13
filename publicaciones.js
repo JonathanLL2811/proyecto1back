@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const sharp = require('sharp');
-const pool = require('./conexion');
+const pool = require('./conexion'); // Verifica que la ruta sea correcta
 const router = express.Router();
 
 const storage = multer.memoryStorage();
@@ -52,7 +52,7 @@ router.post('/', upload.single('foto'), async (req, res) => {
   }
 });
 
-// Obtener publicaciones y datos del usuario
+// Obtener publicaciones y datos del usuario, incluyendo comentarios
 router.get('/usuario/:nombre_usuario', async (req, res) => {
   const { nombre_usuario } = req.params;
 
@@ -68,9 +68,13 @@ router.get('/usuario/:nombre_usuario', async (req, res) => {
 
     // Obtener publicaciones del usuario
     const publicacionesResult = await pool.query('SELECT * FROM tbl_publicaciones WHERE nombre_usuario = $1', [nombre_usuario]);
-    const publicaciones = publicacionesResult.rows.map(pub => ({
-      ...pub,
-      foto: pub.foto ? pub.foto.toString('base64') : null // Convertir buffer a base64 si existe
+    const publicaciones = await Promise.all(publicacionesResult.rows.map(async pub => {
+      const comentariosResult = await pool.query('SELECT * FROM tbl_comentarios WHERE id_publicacion = $1', [pub.id_publicacion]);
+      return {
+        ...pub,
+        foto: pub.foto ? pub.foto.toString('base64') : null, // Convertir buffer a base64 si existe
+        comentarios: comentariosResult.rows
+      };
     }));
 
     res.json({
@@ -78,6 +82,7 @@ router.get('/usuario/:nombre_usuario', async (req, res) => {
       publicaciones
     });
   } catch (error) {
+    console.error('Error al obtener publicaciones y datos del usuario:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -99,7 +104,38 @@ router.get('/usuario/:nombre_usuario/publicaciones', async (req, res) => {
   }
 });
 
+// Obtener comentarios de una publicación
+router.get('/:id_publicacion/comentarios', async (req, res) => {
+  const { id_publicacion } = req.params;
+
+  try {
+    const result = await pool.query('SELECT * FROM tbl_comentarios WHERE id_publicacion = $1', [id_publicacion]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error al obtener comentarios:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Crear un nuevo comentario
+router.post('/:id_publicacion/comentarios', async (req, res) => {
+  const { id_publicacion } = req.params;
+  const { nombre_usuario, comentario } = req.body;
+
+  try {
+    const query = `
+      INSERT INTO tbl_comentarios (id_publicacion, nombre_usuario, comentario)
+      VALUES ($1, $2, $3) RETURNING *;
+    `;
+    const values = [id_publicacion, nombre_usuario, comentario];
+    const result = await pool.query(query, values);
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error al crear comentario:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
-
-
 

@@ -1,4 +1,4 @@
--- Active: 1717892304154@@127.0.0.1@5432@redsocial
+-- Active: 1718027958406@@127.0.0.1@5432@redsocial
 -- Crear la tabla tbl_usuario
 CREATE TABLE tbl_usuario (
     nombre_usuario VARCHAR(20) PRIMARY KEY,
@@ -26,3 +26,13 @@ CREATE TABLE tbl_publicaciones (
       REFERENCES tbl_usuario(nombre_usuario)
 );
 select * from tbl_usuario
+
+CREATE TABLE tbl_comentarios (
+    id_comentario SERIAL PRIMARY KEY,
+    id_publicacion INT,
+    nombre_usuario VARCHAR(20),
+    comentario TEXT,
+    fecha_comentario TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_publicacion) REFERENCES tbl_publicaciones(id_publicacion),
+    FOREIGN KEY (nombre_usuario) REFERENCES tbl_usuario(nombre_usuario)
+);
